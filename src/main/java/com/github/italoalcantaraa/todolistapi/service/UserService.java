@@ -8,6 +8,7 @@ import com.github.italoalcantaraa.todolistapi.validation.UserValidation;
 import lombok.AllArgsConstructor;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class UserService {
     private UserValidation userValidation;
     private PasswordEncoder passwordEncoder;
 
-    public void create(CreateUserResquestDto createUserResquestDto) {
+    public UserResponseDto create(CreateUserResquestDto createUserResquestDto) {
         userValidation.create(createUserResquestDto);
 
         User user = new User();
@@ -27,9 +28,16 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(createUserResquestDto.password()));
 
         userRepository.save(user);
+
+        return UserResponseDto.fromEntity(user);
     }
 
-    public Optional<UserResponseDto> findById(String id) {
-        
+    public UserResponseDto findById(String id) {
+        Optional<User> userOpt = userRepository.findById(UUID.fromString(id));
+        if (userOpt.isPresent()) {
+            return UserResponseDto.fromEntity(userOpt.get());
+        }
+
+        throw new IllegalArgumentException("Usuário não encontrado");
     }
 }

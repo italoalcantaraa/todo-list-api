@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-public class UserValidation {
+public class UserValidation extends Validation{
 
     private UserRepository userRepository;
 

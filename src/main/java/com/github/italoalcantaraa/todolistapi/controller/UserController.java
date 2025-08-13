@@ -3,42 +3,41 @@ package com.github.italoalcantaraa.todolistapi.controller;
 import com.github.italoalcantaraa.todolistapi.dto.user.CreateUserResquestDto;
 import com.github.italoalcantaraa.todolistapi.dto.user.UserResponseDto;
 import com.github.italoalcantaraa.todolistapi.service.UserService;
-import com.github.italoalcantaraa.todolistapi.validation.UserValidation;
-import jakarta.persistence.GeneratedValue;
 
 import java.util.Optional;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@AllArgsConstructor
 public class UserController {
 
     private UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
     @PostMapping
-    public void create(@RequestBody CreateUserResquestDto createUserResquestDto) {
-        System.out.println(createUserResquestDto.password());
-        userService.create(createUserResquestDto);
+    public ResponseEntity<?> create(@RequestBody CreateUserResquestDto createUserResquestDto) {
+        try {
+            UserResponseDto user = userService.create(createUserResquestDto);
+            return ResponseEntity.ok(user);
+        }catch (IllegalArgumentException iae) {
+            return ResponseEntity.badRequest().body(iae.getMessage());
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Ocorreu um erro inesperado");
+        }
     }
 
     @GetMapping("{id}")
     public ResponseEntity<?> getUserById(@PathVariable("id") String id) {
         try {
-            Optional<UserResponseDto> userOpt = userService.findById(id);
-
-            if(userOpt.isPresent()) {
-                return ResponseEntity.ok().body(userOpt.get().name());
-            }
-
-            return ResponseEntity.status(404).body("Usuário não encontrado");
+            UserResponseDto userResponse = userService.findById(id);
+            return ResponseEntity.ok().body(userResponse);
+        } catch (IllegalArgumentException iae) {
+            return ResponseEntity.status(404).body(iae.getMessage());
         } catch (Exception e) {
-            // TODO: handle exception
+            return ResponseEntity.badRequest().body("Ocorreu um erro inesperado");
         }
     }
 }

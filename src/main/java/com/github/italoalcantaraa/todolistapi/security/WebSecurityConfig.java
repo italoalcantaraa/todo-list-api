@@ -1,7 +1,9 @@
-package com.github.italoalcantaraa.todolistapi.config;
+package com.github.italoalcantaraa.todolistapi.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
 
     @Bean
