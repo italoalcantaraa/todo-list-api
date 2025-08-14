@@ -32,5 +32,5 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"),
             uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role_id"})
     )
-    private Set<Role> role;
+    private Set<Role> roles;
 }
