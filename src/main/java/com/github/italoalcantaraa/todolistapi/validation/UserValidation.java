@@ -1,38 +1,42 @@
 package com.github.italoalcantaraa.todolistapi.validation;
 
-import com.github.italoalcantaraa.todolistapi.dto.user.CreateUserResquestDto;
+import com.github.italoalcantaraa.todolistapi.dto.user.CreateUserRequestDto;
+import com.github.italoalcantaraa.todolistapi.dto.user.LoginRequestDto;
+import com.github.italoalcantaraa.todolistapi.exception.user.InvalidDataUserException;
+import com.github.italoalcantaraa.todolistapi.exception.user.InvalidLoginDataException;
+import com.github.italoalcantaraa.todolistapi.exception.user.UserNotFoundExeption;
 import com.github.italoalcantaraa.todolistapi.model.User;
 import com.github.italoalcantaraa.todolistapi.repository.UserRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
+@AllArgsConstructor
 public class UserValidation extends Validation{
 
     private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
 
-    public UserValidation(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    public void create(CreateUserResquestDto createUserResquestDto) {
-        if(createUserResquestDto.username().length() < 4) {
-            throw new IllegalArgumentException("Mín. 4 caracteres.");
+    public void create(CreateUserRequestDto request) {
+        if(request.username().length() < 3) {
+            throw new InvalidDataUserException("O nome deve ter no mínimo 3 caracteres");
         }
 
-        Optional<User> user = userRepository.findByUsername(createUserResquestDto.username());
+        Optional<User> user = userRepository.findByUsername(request.username());
 
         if(user.isPresent()) {
-            throw new IllegalArgumentException("Não foi possível concluir o cadastro. Verifique os dados e tente novamente.");
+            throw new InvalidDataUserException("Não foi possível concluir o cadastro. Verifique os dados e tente novamente.");
         }
 
-        if(!passwordValidation(createUserResquestDto.password())) {
-            throw new IllegalArgumentException("Mín. 8 caracteres com maiúscula, minúscula e número");
+        if(!validatePasswordCreation(request.password())) {
+            throw new InvalidDataUserException("Mín. 8 caracteres com maiúscula, minúscula e número");
         }
     }
 
-    public boolean passwordValidation(String password) {
+    public boolean validatePasswordCreation(String password) {
         if(password.length() < 8) {
             return false;
         }
@@ -57,4 +61,28 @@ public class UserValidation extends Validation{
         return uppercaseLetter && lowercaseLetter && specialCharacter && digit;
     }
 
+    public User loginValidation(LoginRequestDto request) {
+        if(isNullOrIsEmpty(request.username(), request.password())) {
+            throw new InvalidLoginDataException("Informe os campos");
+        }
+
+        // Mensagem para todos os erros de informações de login
+        String message = "Usuário e/ou senha inválidos";
+
+        Optional<User> user = userRepository.findByUsername(request.username());
+        if(user.isEmpty()) {
+            throw new UserNotFoundExeption(message);
+        }
+
+        // verificação de senha
+        if(!passwordEncoder.matches(request.password(), user.get().getPassword())) {
+            throw new InvalidLoginDataException(message);
+        }
+
+        return user.get(); // login ok
+    }
+
+    public boolean passwordValidation(String passwordRequest, String decodedPasswordSaved) {
+        return passwordEncoder.matches(passwordRequest, decodedPasswordSaved);
+    }
 }

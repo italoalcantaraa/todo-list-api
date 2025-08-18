@@ -1,12 +1,14 @@
 package com.github.italoalcantaraa.todolistapi.controller;
 
-import com.github.italoalcantaraa.todolistapi.dto.user.CreateUserResquestDto;
-import com.github.italoalcantaraa.todolistapi.dto.user.UserResponseDto;
+import com.github.italoalcantaraa.todolistapi.dto.user.CreateUserRequestDto;
+import com.github.italoalcantaraa.todolistapi.dto.user.CreateUserResponseDto;
+import com.github.italoalcantaraa.todolistapi.dto.user.LoginRequestDto;
+import com.github.italoalcantaraa.todolistapi.dto.user.LoginResponseDto;
 import com.github.italoalcantaraa.todolistapi.service.UserService;
 
-import java.util.Optional;
-
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,27 +19,15 @@ public class UserController {
 
     private UserService userService;
 
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody CreateUserResquestDto createUserResquestDto) {
-        try {
-            UserResponseDto user = userService.create(createUserResquestDto);
-            return ResponseEntity.ok(user);
-        }catch (IllegalArgumentException iae) {
-            return ResponseEntity.badRequest().body(iae.getMessage());
-        }catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ocorreu um erro inesperado");
-        }
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
+        LoginResponseDto response = userService.login(loginRequestDto);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(200));
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<?> getUserById(@PathVariable("id") String id) {
-        try {
-            UserResponseDto userResponse = userService.findById(id);
-            return ResponseEntity.ok().body(userResponse);
-        } catch (IllegalArgumentException iae) {
-            return ResponseEntity.status(404).body(iae.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ocorreu um erro inesperado");
-        }
+    @PostMapping("/register")
+    public ResponseEntity<CreateUserResponseDto> create(@RequestBody CreateUserRequestDto createUserRequestDto) {
+            CreateUserResponseDto user = userService.create(createUserRequestDto);
+            return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 }

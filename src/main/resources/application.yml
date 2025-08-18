@@ -8,9 +8,13 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: create
   security:
     user:
       name: italo
       password: 69dbb547-d3e2-463b-bab4-2ddc58018f6c
+logging:
+  level:
+    org:
+      springframework:
+        security: debug
